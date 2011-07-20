@@ -65,7 +65,7 @@ function GM_API(aScript, aURL, aWinID, aSafeWin, aUnsafeContentWin, aChromeWin) 
 
   var lazyLoaders = {};
   XPCOMUtils.defineLazyGetter(lazyLoaders, "xmlhttpRequester", function() {
-    return new GM_xmlhttpRequester(aUnsafeContentWin, aURL, aScript);
+    return new GM_xmlhttpRequester(aSafeWin, aUnsafeContentWin, aURL, aScript);
   });
   XPCOMUtils.defineLazyGetter(lazyLoaders, "storage", function() {
     return new GM_ScriptStorage(aScript);

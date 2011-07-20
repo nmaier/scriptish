@@ -2,6 +2,7 @@ var EXPORTED_SYMBOLS = ["GM_xmlhttpRequester"];
 
 Components.utils.import("resource://scriptish/constants.js");
 lazyImport(this, "resource://scriptish/api.js", ["GM_apiSafeCallback"]);
+lazyUtil(this, "originCheck");
 lazyUtil(this, "stringBundle");
 
 const MIME_JSON = /^(application|text)\/(?:x-)?json/i;
@@ -75,7 +76,8 @@ IgnoreRedirect.prototype = {
 };
 
 
-function GM_xmlhttpRequester(unsafeContentWin, originUrl, aScript) {
+function GM_xmlhttpRequester(safeWin, unsafeContentWin, originUrl, aScript) {
+  this.safeWin = safeWin;
   this.unsafeContentWin = unsafeContentWin;
   this.originUrl = originUrl;
   this.script = aScript;
@@ -107,12 +109,27 @@ GM_xmlhttpRequester.prototype.contentStartRequest = function(details) {
 
   // This is important - without it, GM_xmlhttpRequest can be used to get
   // access to things like files and chrome. Careful.
+  var req;
   switch (uri.scheme) {
     case "http":
-    case "https":
     case "ftp":
-      var req = Instances.xhr;
-      this.chromeStartRequest(url, details, req);
+    case "https":
+      Scriptish_originCheck(this.script, this.safeWin, uri, function(success) {
+        if (!success) {
+          if (details.onerror) {
+            GM_apiSafeCallback(
+                this.unsafeContentWin,
+                this.script,
+                details,
+                details.onerror,
+                [{readyState: 0}]
+                );
+          }
+          return;
+        }
+        req = Instances.xhr;
+        this.chromeStartRequest(url, details, req);
+      }.bind(this));
       break;
     default:
       throw new Error(Scriptish_stringBundle("error.api.reqURL.scheme") + ": " + details.url);
@@ -120,7 +137,8 @@ GM_xmlhttpRequester.prototype.contentStartRequest = function(details) {
 
   return {
     abort: function() {
-      req.abort();
+      if (req)
+        req.abort();
     }
   };
 }

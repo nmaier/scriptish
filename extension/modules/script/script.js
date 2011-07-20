@@ -96,6 +96,9 @@ function Script(config) {
   this._rawMeta = null;
   this._jsversion = null;
   this["_run-at"] = null;
+
+  this.allowedOrigins = [];
+  this.deniedOrigins = [];
 }
 Script.prototype = {
   __proto__: CachedResource.prototype,
@@ -311,6 +314,8 @@ Script.prototype = {
   },
 
   matchesDomain: function(aURL) {
+    var i = this.domains.length - 1;
+    if (!~i) return true; // when there are no @domains, then allow the host
     try {
       var host = NetUtil.newURI(aURL).host;
     } catch (e) {
@@ -318,9 +323,6 @@ Script.prototype = {
       // i.e. "about:scriptish"
       return Scriptish.isGreasemonkeyable(aURL);
     }
-
-    var i = this.domains.length - 1;
-    if (!~i) return true; // when there are no @domains, then allow the host
     for (; ~i; i--) if (host == this.domains[i]) return true;
     return false;
   },

@@ -14,6 +14,7 @@ Cu.import("resource://scriptish/utils/Scriptish_ExtendedStringBundle.js", tools)
 Cu.import("resource://scriptish/utils/Scriptish_findError.js", tools);
 Cu.import("resource://scriptish/utils/Scriptish_getBinaryContents.js", tools);
 Cu.import("resource://scriptish/utils/Scriptish_getBrowserForContentWindow.js", tools);
+Cu.import("resource://scriptish/utils/Scriptish_getOwnerWindowForContentWindow.js", tools);
 Cu.import("resource://scriptish/utils/Scriptish_getContents.js", tools);
 Cu.import("resource://scriptish/utils/Scriptish_getEditor.js", tools);
 Cu.import("resource://scriptish/utils/Scriptish_getFirebugConsole.js", tools);
@@ -55,6 +56,7 @@ test("Utils", function() {
   equals(typeof(tools.Scriptish_findError), "function", "has Scriptish_findError");
   equals(typeof(tools.Scriptish_getBinaryContents), "function", "has Scriptish_getBinaryContents");
   equals(typeof(tools.Scriptish_getBrowserForContentWindow), "function", "has Scriptish_getBrowserForContentWindow");
+  equals(typeof(tools.Scriptish_getOwnerWindowForContentWindow), "function", "has Scriptish_getBrowserForContentWindow");
   equals(typeof(tools.Scriptish_getContents), "function", "has Scriptish_getContents");
   equals(typeof(tools.Scriptish_getEditor), "function", "has Scriptish_getEditor");
   equals(typeof(tools.Scriptish_getFirebugConsole), "function", "has Scriptish_getFirebugConsole");

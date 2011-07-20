@@ -20,8 +20,11 @@ toolbar[iconsize="small"] #scriptish-button[scriptish-disabled] {
   list-style-image: url("chrome://scriptish/skin/scriptish16.png");
 }
 
-.popup-notification-icon[popupid="scriptish-install-popup-notification"] {
+.popup-notification-icon[popupid="scriptish-popup-notification"] {
   list-style-image: url("chrome://scriptish/skin/scriptish64.png");
+}
+.popup-notification-icon[popupid*="scriptish-origincheck-popup-notification"] {
+  list-style-image: url(origincheck.png);
 }
 
 #notification-popup-box[anchorid="scriptish-notification-icon"] > #scriptish-notification-icon {

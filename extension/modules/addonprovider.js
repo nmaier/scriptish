@@ -21,7 +21,7 @@ const Scriptish_ScriptProvider = {
       var callback = function() Scriptish.openManager();
 
       Scriptish_popupNotification({
-        id: "scriptish-install-popup-notification",
+        id: "scriptish-popup-notification",
         message: msg,
         mainAction: {
           label: Scriptish_stringBundle("openUserScriptsManager"),
@@ -59,7 +59,7 @@ const Scriptish_ScriptProvider = {
       var callback = function() Scriptish.openManager();
 
       Scriptish_popupNotification({
-        id: "scriptish-install-popup-notification",
+        id: "scriptish-popup-notification",
         message: msg,
         mainAction: {
           label: Scriptish_stringBundle("openUserScriptsManager"),

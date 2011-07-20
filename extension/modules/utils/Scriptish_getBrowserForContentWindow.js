@@ -11,7 +11,8 @@ function Scriptish_getBrowserForContentWindow(aWin) {
     for (let [, tab] in Iterator(tabBrowser.tabs)) {
       if (!tab) continue;
       let win = tab.linkedBrowser.contentWindow;
-      if (aWin === win || aWin.top === win) return browserWin;
+      if (aWin === win || aWin.top === win)
+        return tab.linkedBrowser;
     }
   }
   return null;

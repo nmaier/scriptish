@@ -1,5 +1,6 @@
 var EXPORTED_SYMBOLS = ["Scriptish_stringBundle"];
 Components.utils.import("resource://scriptish/constants.js");
+lazyImport(this, "resource://scriptish/prefmanager.js", ["Scriptish_prefRoot"]);
 
 const defaultBundle = Services.strings.createBundle("chrome://scriptish/locale/scriptish.properties");
 const engBundle = Services.strings.createBundle((function(){
@@ -12,19 +13,20 @@ const engBundle = Services.strings.createBundle((function(){
   return tmp.join("/")
 })());
 
-XPCOMUtils.defineLazyGetter(this, "Scriptish_getPref", function() {
-  let tools = {};
-  Components.utils.import("resource://scriptish/prefmanager.js", tools);
-  return function(aVal) tools.Scriptish_prefRoot.getValue(aVal);
-});
+function getString(aBundle, aKey, aFormatValues) {
+  if (aFormatValues) {
+    return aBundle.formatStringFromName(aKey, aFormatValues, aFormatValues.length);
+  }
+  return aBundle.GetStringFromName(aKey);
+}
 
-function Scriptish_stringBundle(aKey) {
-  if (Scriptish_getPref("useDefaultLocale"))
-    return engBundle.GetStringFromName(aKey);
+function Scriptish_stringBundle(aKey, aFormatValues) {
+  if (Scriptish_prefRoot.getValue("useDefaultLocale"))
+    return getString(engBundle, aKey, aFormatValues);
   try {
-    return defaultBundle.GetStringFromName(aKey)
-        || engBundle.GetStringFromName(aKey);
+    return getString(defaultBundle, aKey, aFormatValues)
+        || getString(engBundle, aKey, aFormatValues);
   } catch (e) {
-    return engBundle.GetStringFromName(aKey);
+    return getString(engBundle, aKey, aFormatValues)
   }
 }
