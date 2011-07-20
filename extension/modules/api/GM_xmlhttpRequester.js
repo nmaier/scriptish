@@ -109,7 +109,7 @@ GM_xmlhttpRequester.prototype.contentStartRequest = function(details) {
 
   // This is important - without it, GM_xmlhttpRequest can be used to get
   // access to things like files and chrome. Careful.
-  var req;
+  var req, aborted;
   switch (uri.scheme) {
     case "http":
     case "ftp":
@@ -127,6 +127,9 @@ GM_xmlhttpRequester.prototype.contentStartRequest = function(details) {
           }
           return;
         }
+        if (aborted) {
+          return;
+        }
         req = Instances.xhr;
         this.chromeStartRequest(url, details, req);
       }.bind(this));
@@ -137,6 +140,7 @@ GM_xmlhttpRequester.prototype.contentStartRequest = function(details) {
 
   return {
     abort: function() {
+      aborted = true;
       if (req)
         req.abort();
     }
