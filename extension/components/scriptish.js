@@ -413,6 +413,14 @@ ScriptishService.prototype = {
           if (success) {
             this.evalInSandboxInternal(req, aScript, aSandbox, aWindow);
           }
+          else {
+            Scriptish_logScriptError(
+              new Error("A @require was denied from injecting due to secure origin checks: " + req.downloadURL),
+              aWindow,
+              req.fileURL,
+              aScript.id
+              );
+          }
           this.evalInSandbox(aScript, aSandbox, aWindow, aRequires);
         }).bind(this));
       }
