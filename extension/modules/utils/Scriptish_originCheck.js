@@ -9,7 +9,11 @@ lazyUtil(this, "stringBundle");
 
 function getTLD(u) {
   try {
-    return Services.tld.getBaseDomain(u);
+    var u = u.cloneIgnoringRef();
+    u.userPass = "";
+    u.path = "";
+    u.host = "." + Services.tld.getBaseDomain(u);
+    return u.spec;
   }
   catch (ex) {
     if (u.host) {
@@ -23,6 +27,15 @@ function getTLD(u) {
 
 function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
   var sourceURI = Services.io.newURI(contentWindow.document.location, null, null);
+  if (!(resourceURI instanceof Ci.nsIURI)) {
+    resourceURI = Services.io.newURI(resourceURI, null, null);
+  }
+
+  // always allow data, as data is shipped with the user script
+  if (resourceURI.scheme == "data") {
+    callback(true);
+    return;
+  }
 
   // all insecure
   if (sourceURI.scheme != "https" && resourceURI.scheme != "https") {
@@ -44,7 +57,7 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
   var resourceTLD = getTLD(resourceURI);
 
   // same origin
-  if (sourceURI.scheme == resourceURI.scheme && sourceTLD == resourceTLD) {
+  if (sourceTLD == resourceTLD) {
     // same origin
     callback(true);
     return;
