@@ -764,7 +764,10 @@ Script.prototype = {
       url: screenshot.url,
       thumbnailURL: screenshot.thumbnailURL
     })),
-    requires: this._requires.map(function(req) req._filename),
+    requires: this._requires.map(function(req)({
+      filename: req._filename,
+      downloadURL: req._downloadURL
+    })),
     resources: this._resources.map(function(res) ({
       name: res._name,
       filename: res._filename,
@@ -1165,7 +1168,13 @@ Script.loadFromJSON = function(aConfig, aSkeleton) {
   aSkeleton.matches.forEach(function(i) script._matches.push(new MatchPattern(i)));
   aSkeleton.requires.forEach(function(i) {
     var scriptRequire = new ScriptRequire(script);
-    scriptRequire._filename = i;
+    if (typeof i == "string") {
+      scriptRequire._filename = i;
+    }
+    else {
+      scriptRequire._filename = i.filename;
+      scriptRequire._downloadURL = i.downloadURL;
+    }
     script._requires.push(scriptRequire);
   });
   aSkeleton.resources.forEach(function(i) {
