@@ -2,6 +2,7 @@ var EXPORTED_SYMBOLS = ["GM_xmlhttpRequester"];
 
 Components.utils.import("resource://scriptish/constants.js");
 lazyImport(this, "resource://scriptish/api.js", ["GM_apiSafeCallback"]);
+lazyImport(this, "resource://scriptish/logging.js", ["Scriptish_logScriptError"]);
 lazyUtil(this, "originCheck");
 lazyUtil(this, "stringBundle");
 
@@ -116,6 +117,12 @@ GM_xmlhttpRequester.prototype.contentStartRequest = function(details) {
     case "https":
       Scriptish_originCheck(this.script, this.safeWin, uri, function(success) {
         if (!success) {
+          Scriptish_logScriptError(
+              new Error("An XHR was denied due to secure origin checks: " + url),
+              this.safeWin,
+              this.script.fileURL,
+              this.script.id
+              );
           if (details.onerror) {
             GM_apiSafeCallback(
                 this.unsafeContentWin,
