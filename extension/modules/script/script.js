@@ -97,8 +97,8 @@ function Script(config) {
   this._jsversion = null;
   this["_run-at"] = null;
 
-  this.allowedOrigins = [];
-  this.deniedOrigins = [];
+  this.allowedOrigins = {};
+  this.deniedOrigins = {};
 }
 Script.prototype = {
   __proto__: CachedResource.prototype,
@@ -806,7 +806,9 @@ Script.prototype = {
     averageRating: this.averageRating,
     reviewCount: this.reviewCount,
     totalDownloads: this.totalDownloads,
-    applyBackgroundUpdates: this._applyBackgroundUpdates
+    applyBackgroundUpdates: this._applyBackgroundUpdates,
+    allowedOrigins: this.allowedOrigins,
+    deniedOrigins: this.deniedOrigins
   }),
 
   // TODO: DRY
@@ -1207,6 +1209,12 @@ Script.loadFromJSON = function(aConfig, aSkeleton) {
   script.reviewCount = aSkeleton.reviewCount;
   script.totalDownloads = aSkeleton.totalDownloads;
   script._applyBackgroundUpdates = aSkeleton.applyBackgroundUpdates
+  if (aSkeleton.allowedOrigins) {
+    script.allowedOrigins = aSkeleton.allowedOrigins;
+  }
+  if (aSkeleton.deniedOrigins) {
+    script.deniedOrigins = aSkeleton.deniedOrigins;
+  }
 
   script.update();
 

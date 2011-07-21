@@ -86,11 +86,13 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
     return true;
   }
 
-  if (script.deniedOrigins.indexOf(resourceTLD) != -1) {
+  if (script.deniedOrigins[sourceTLD]
+    && script.deniedOrigins[sourceTLD].indexOf(resourceTLD) != -1) {
     if (callback) callback(false);
     return false;
   }
-  if (script.allowedOrigins.indexOf(resourceTLD) != -1) {
+  if (script.allowedOrigins[sourceTLD]
+    && script.allowedOrigins[sourceTLD].indexOf(resourceTLD) != -1) {
     if (callback) callback(true);
     return true;
   }
@@ -118,7 +120,12 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
       label: Scriptish_stringBundle("originCheck.alwaysAllow"),
       accessKey: Scriptish_stringBundle("originCheck.alwaysAllow.ak"),
       callback: function() {
-        script.allowedOrigins.push(resourceTLD);
+        try {
+          script.allowedOrigins[sourceTLD].push(resourceTLD);
+        } catch (ex) {
+          script.allowedOrigins[sourceTLD] = [resourceTLD];
+        }
+        Services.obs.notifyObservers(null, "scriptish-config-saved", null);
         callback(true);
       }
     },
@@ -134,7 +141,12 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
         label: Scriptish_stringBundle("originCheck.alwaysDeny"),
         accessKey: Scriptish_stringBundle("originCheck.alwaysDeny.ak"),
         callback: function() {
-          script.deniedOrigins.push(resourceTLD);
+          try {
+            script.deniedOrigins[sourceTLD].push(resourceTLD);
+          } catch (ex) {
+            script.deniedOrigins[sourceTLD] = [resourceTLD];
+          }
+          Services.obs.notifyObservers(null, "scriptish-config-saved", null);
           callback(false);
         }
       },
