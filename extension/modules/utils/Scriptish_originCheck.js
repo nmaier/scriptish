@@ -56,20 +56,20 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
 
   // always allow data, as data is shipped with the user script
   if (resourceURI.scheme == "data") {
-    callback(true);
-    return;
+    if (callback) callback(true);
+    return true;
   }
 
   // all insecure
   if (sourceURI.scheme != "https" && resourceURI.scheme != "https") {
-    callback(true);
-    return;
+    if (callback) callback(true);
+    return true;
   }
 
   // secure document to insecure: deny
   if (sourceURI.scheme == "https" && resourceURI.scheme != "https") {
-    callback(false);
-    return;
+    if (callback) callback(false);
+    return false;
   }
 
   // still possible:
@@ -82,22 +82,26 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
   // same origin
   if (sourceTLD == resourceTLD) {
     // same origin
-    callback(true);
-    return;
+    if (callback) callback(true);
+    return true;
   }
 
   if (script.deniedOrigins.indexOf(resourceTLD) != -1) {
-    callback(false);
-    return;
+    if (callback) callback(false);
+    return false;
   }
   if (script.allowedOrigins.indexOf(resourceTLD) != -1) {
-    callback(true);
-    return;
+    if (callback) callback(true);
+    return true;
   }
 
   if (whitelist.indexOf(resourceTLD) != -1) {
-    callback(true);
-    return;
+    if (callback) callback(true);
+    return true;
+  }
+
+  if (!callback) {
+    return false;
   }
 
   // Ask the user
@@ -143,4 +147,6 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
       }
     ]
   });
+
+  return undefined;
 }

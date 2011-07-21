@@ -9,6 +9,7 @@ lazyImport(this, "resource://scriptish/utils/Scriptish_alert.js", ["Scriptish_al
 lazyUtil(this, "cryptoHash");
 lazyUtil(this, "notification");
 lazyUtil(this, "openInTab");
+lazyUtil(this, "originCheck");
 lazyUtil(this, "stringBundle");
 
 lazyImport(this, "resource://scriptish/api/GM_ScriptStorage.js", ["GM_ScriptStorage"]);
@@ -36,6 +37,19 @@ function GM_apiLeakCheck(apiName) {
       return false;
     }
   } while (stack = stack.caller);
+  return true;
+}
+
+function GM_apiOriginCheck(aScript, aContentWindow, aResourceURI) {
+  if (!Scriptish_originCheck(aScript, aContentWindow, aResourceURI)) {
+    Scriptish_logScriptError(
+      new Error("Origin-checks prevent loading of resource: " + aResourceURI),
+      aScript,
+      aScript.fileURL,
+      aScript.id
+      );
+    return false;
+  }
   return true;
 }
 
@@ -111,13 +125,17 @@ function GM_API(aScript, aURL, aWinID, aSafeWin, aUnsafeContentWin, aChromeWin) 
     return lazyLoaders.storage.listValues.apply(lazyLoaders.storage, arguments);
   }
 
-  this.GM_getResourceURL = function GM_getResourceURL() {
+  this.GM_getResourceURL = function GM_getResourceURL(name) {
     if (!GM_apiLeakCheck("GM_getResourceURL")) return;
-    return lazyLoaders.resources.getResourceURL.apply(lazyLoaders.resources, arguments)
+    var res = lazyLoaders.resources.get(name);
+    if (res.downloadURL && !GM_apiOriginCheck(aScript, aSafeWin, res.downloadURL)) return;
+    return res.dataContent;
   }
-  this.GM_getResourceText = function GM_getResourceText() {
+  this.GM_getResourceText = function GM_getResourceText(name) {
     if (!GM_apiLeakCheck("GM_getResourceText")) return;
-    return lazyLoaders.resources.getResourceText.apply(lazyLoaders.resources, arguments)
+    var res = lazyLoaders.resources.get(name);
+    if (res.downloadURL && !GM_apiOriginCheck(aScript, aSafeWin, res.downloadURL)) return;
+    return res.textContent;
   }
 
   this.GM_getMetadata = function(aKey, aLocalVal) {

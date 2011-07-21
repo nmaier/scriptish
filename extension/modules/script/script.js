@@ -771,6 +771,7 @@ Script.prototype = {
     resources: this._resources.map(function(res) ({
       name: res._name,
       filename: res._filename,
+      downloadURL: res._downloadURL,
       mimetype: res._mimetype,
       charset: res._charset
     })),
@@ -1181,6 +1182,7 @@ Script.loadFromJSON = function(aConfig, aSkeleton) {
     var scriptResource = new ScriptResource(script);
     scriptResource._name = i.name;
     scriptResource._filename = i.filename;
+    scriptResource._downloadURL = i.downloadURL;
     scriptResource._mimetype = i.mimetype;
     scriptResource._charset = i.charset;
     script._resources.push(scriptResource);
