@@ -4,8 +4,31 @@ const EXPORTED_SYMBOLS = ["Scriptish_originCheck"];
 
 const Cu = Components.utils;
 Cu.import("resource://scriptish/constants.js");
+lazyImport(this, "resource://scriptish/prefmanager.js", ["Scriptish_prefRoot"]);
 lazyUtil(this, "popupNotification");
 lazyUtil(this, "stringBundle");
+
+const whitelist = [];
+function updateWhitelist() {
+  whitelist.length = 0;
+  try {
+    var list = JSON.parse(Scriptish_prefRoot.getValue("originCheck.whitelist"));
+    for (var [,i] in Iterator(list)) {
+      if (/^http/.test(i)) {
+        whitelist.push(i);
+      }
+      else {
+        whitelist.push("http://." + i + "/");
+        whitelist.push("https://." + i + "/");
+      }
+    }
+  }
+  catch (ex) {
+    Cu.reportError(ex);
+  }
+}
+updateWhitelist();
+Scriptish_prefRoot.watch("originCheck.whitelist", updateWhitelist);
 
 function getTLD(u) {
   try {
@@ -68,6 +91,11 @@ function Scriptish_originCheck(script, contentWindow, resourceURI, callback) {
     return;
   }
   if (script.allowedOrigins.indexOf(resourceTLD) != -1) {
+    callback(true);
+    return;
+  }
+
+  if (whitelist.indexOf(resourceTLD) != -1) {
     callback(true);
     return;
   }
