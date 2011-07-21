@@ -20,6 +20,7 @@ lazyImport(this, "resource://scriptish/utils/Scriptish_installUri.js", ["Scripti
 
 lazyUtil(this, "getOwnerWindowForContentWindow");
 lazyUtil(this, "getWindowIDs");
+lazyUtil(this, "originCheck");
 lazyUtil(this, "stringBundle");
 
 const {nsIContentPolicy: CP, nsIDOMXPathResult: XPATH_RESULT} = Ci;
@@ -388,26 +389,38 @@ ScriptishService.prototype = {
     }
   },
 
-  evalInSandbox: function(aScript, aSandbox, aWindow) {
-    const jsVer = aScript.jsversion;
-
+  evalInSandboxInternal: function(aResource, aScript, aSandbox, aWindow) {
     try {
-      for (let [, req] in Iterator(aScript.requires)) {
-        var rfileURL = req.fileURL;
-        try {
-          Cu.evalInSandbox(
-            req.textContent + "\n",
-            aSandbox,
-            jsVer,
-            fileURLPrefix + rfileURL,
-            1
-            );
-        } catch (ex) {
-          Scriptish_logScriptError(ex, aWindow, rfileURL, aScript.id);
-        }
+      Cu.evalInSandbox(
+        aResource.textContent + "\n",
+        aSandbox,
+        aScript.jsversion,
+        fileURLPrefix + aResource.fileURL,
+        1
+        );
+    } catch (ex) {
+      Scriptish_logScriptError(ex, aWindow, aResource.fileURL, aScript.id);
+    }
+  },
+
+  evalInSandbox: function(aScript, aSandbox, aWindow, aRequires) {
+    aRequires = aRequires || aScript.requires.splice(0);
+
+    if (aRequires.length) {
+      var req = aRequires.shift();
+      if (req.downloadURL) {
+        Scriptish_originCheck(aScript, aWindow, req.downloadURL, (function(success) {
+          if (success) {
+            this.evalInSandboxInternal(req, aScript, aSandbox, aWindow);
+          }
+          this.evalInSandbox(aScript, aSandbox, aWindow, aRequires);
+        }).bind(this));
       }
-    } catch (e) {
-      return Scriptish_logError(e, 0, aScript.fileURL, e.lineNumber);
+      else {
+        this.evalInSandboxInternal(req, aScript, aSandbox, aWindow);
+        this.evalInSandbox(aScript, aSandbox, aWindow, aRequires);
+      }
+      return;
     }
 
     try {
@@ -415,7 +428,7 @@ ScriptishService.prototype = {
         Cu.evalInSandbox(
           aScript.textContent + "\n",
           aSandbox,
-          jsVer,
+          aScript.jsversion,
           fileURLPrefix + aScript.fileURL,
           1
           );
